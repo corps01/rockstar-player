@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  postgres_db30:
+    image: postgres:14-alpine
+    container_name: "postgres30"
+    environment:
+      - "POSTGRES_PASSWORD=corpsTest123"
+      - "POSTGRES_DB=omar_corpusdb"
+      - "POSTGRES_USER=omar_corpus"
+    ports:
+      - "10030:5530"
+    volumes:
+      - "/home/omar_corpus/postgres:/usr/src/postgres"
+    networks:
+      - our-library-net
+    command: "-p 5530"
+
+  web30:
+    build: .
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8030"
+    container_name: "django30"
+    depends_on: 
+      - postgres_db30
+    environment:
+      PSQL_DBNAME: "omar_corpusdb"
+      PSQL_USERNAME: "omar_corpus"
+      PSQL_PASS: "corpsTest123"
+      PSQL_PASSWORD: "corpsTest123"
+      PSQL_HOST: "postgres_db30"
+      PSQL_PORT: "5530"
+      JWT_TOKEN_TIME: "120"
+    volumes:
+      - "/home/omar_corpus/rockstar_player/player_back:/usr/src/django/player_back"
+    ports:
+      - "9030:8030"
+    networks:
+      - our-library-net
+networks:
+  our-library-net:
+    external: true
+    driver: bridge
